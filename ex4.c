@@ -248,8 +248,8 @@ float humanPyramid(int i, int j, float weights[PYRAMID_SIZE][PYRAMID_SIZE]) {
         return 0;
     if (i == 0)
         return weights[0][0];
-    return weights[i][j] +
-           .5f * humanPyramid(i - 1, j, weights) + .5f * humanPyramid(i - 1, j - 1, weights);
+    return .5f * humanPyramid(i - 1, j, weights) + .5f * humanPyramid(i - 1, j - 1, weights)
+           + weights[i][j];
 }
 
 char closingOf(char brace) {
