@@ -99,17 +99,20 @@ int main() {
                         for (int j = 0; j <= i && !negativeValue; ++j) {
                             scanf(" %f", &weights[i][j]);
                             if (weights[i][j] < 0) {
-                                printf("Negative weights are not supported.\n");
                                 negativeValue = true;
                             }
                         }
                     }
 
-                    printf(" The total weight on each cheerleader is:\n");
-                    for (int i = 0; i < PYRAMID_SIZE && !negativeValue; ++i) {
-                        for (int j = 0; j <= i; ++j)
-                            printf("%.2f ", humanPyramid(i, j, weights));
-                        printf("\n");
+                    if (negativeValue) {
+                        printf("Negative weights are not supported.\n");
+                    } else {
+                        printf(" The total weight on each cheerleader is:\n");
+                        for (int i = 0; i < PYRAMID_SIZE && !negativeValue; ++i) {
+                            for (int j = 0; j <= i; ++j)
+                                printf("%.2f ", humanPyramid(i, j, weights));
+                            printf("\n");
+                        }
                     }
 
                     break;
@@ -199,7 +202,7 @@ int main() {
                     for (int i = 0; i < WORDS; ++i) {
                         char word[MAX_WORD_LENGTH + 1];
                         scanf(" %s", word);
-                        int len = (int)strlen(word) - 1;
+                        int len = (int) strlen(word) - 1;
                         strcpy(words[len][wordsAmounts[len]++], word);
                     }
 
