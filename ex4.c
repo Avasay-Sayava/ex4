@@ -108,7 +108,7 @@ int main() {
                         printf("Negative weights are not supported.\n");
                     } else {
                         printf(" The total weight on each cheerleader is:\n");
-                        for (int i = 0; i < PYRAMID_SIZE && !negativeValue; ++i) {
+                        for (int i = 0; i < PYRAMID_SIZE; ++i) {
                             for (int j = 0; j <= i; ++j)
                                 printf("%.2f ", humanPyramid(i, j, weights));
                             printf("\n");
