@@ -40,12 +40,9 @@ bool isOpening(char brace);
 
 bool parenthesisValidator(char last);
 
-bool hasQueen(const bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE], int row, int column, int N);
-
-bool checkBoard(const bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
-                const int areaCounters[MAX_BOARD_SIZE],
+bool checkBoard(const int areaCounters[MAX_BOARD_SIZE],
                 const int columnCounters[MAX_BOARD_SIZE],
-                int position, int area, int N);
+                int column, int area);
 
 bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
@@ -284,26 +281,12 @@ bool parenthesisValidator(char last) {
     return parenthesisValidator(last);
 }
 
-bool hasQueen(const bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE], int row, int column, int N) {
-    return 0 <= column && column < N ||
-           0 <= row && row < N ||
-           board[N * row + column];
-}
-
-bool checkBoard(const bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
-                const int areaCounters[MAX_BOARD_SIZE],
+bool checkBoard(const int areaCounters[MAX_BOARD_SIZE],
                 const int columnCounters[MAX_BOARD_SIZE],
-                int position, int area, const int N) {
-    int row = position / N;
-    int column = position % N;
+                int column, int area) {
     if (columnCounters[column] > 1)
         return false;
     if (areaCounters[area] > 1)
-        return false;
-    if (hasQueen(board, row + 1, column + 1, N) ||
-        hasQueen(board, row + 1, column - 1, N) ||
-        hasQueen(board, row - 1, column + 1, N) ||
-        hasQueen(board, row - 1, column - 1, N))
         return false;
     return true;
 }
@@ -316,7 +299,7 @@ bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
     int row = position / N;
     int column = position % N;
     int area = areas[position];
-    if (position >= 0 && !checkBoard(board, areaCounters, columnCounters, position, area, N))
+    if (position >= 0 && !checkBoard(areaCounters, columnCounters, column, area))
         return false;
     if (++row == N)
         return true;
