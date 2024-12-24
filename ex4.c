@@ -12,8 +12,6 @@ Assignment: ex4
 #define false               0
 
 #define HORIZONTAL          'H'
-#define VERTICAL            'V'
-
 #define PYRAMID_SIZE        5
 #define EMPTY               (-1)
 #define MAX_BOARD_SIZE      20
@@ -25,8 +23,6 @@ typedef struct Slot {
     int row, column, length;
     char direction;
 } Slot;
-
-int length(char *str);
 
 int robotPaths(int i, int j);
 
@@ -40,24 +36,24 @@ bool isOpening(char brace);
 
 bool parenthesisValidator(char last);
 
-bool checkBoard(const int areaCounters[MAX_BOARD_SIZE],
-                const int columnCounters[MAX_BOARD_SIZE],
+bool checkBoard(int areaCounters[MAX_BOARD_SIZE],
+                int columnCounters[MAX_BOARD_SIZE],
                 int column, int area);
 
 bool queensColumn(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
-                  const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   int areaCounters[MAX_BOARD_SIZE],
                   int columnCounters[MAX_BOARD_SIZE],
                   int position, int j, int N);
 
 bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
-                  const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   int areaCounters[MAX_BOARD_SIZE],
                   int columnCounters[MAX_BOARD_SIZE],
                   int position, int N);
 
 bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
-               int row, int column, int length, char direction, const char word[MAX_WORD_LENGTH + 1]);
+               int row, int column, int length, char direction, char word[MAX_WORD_LENGTH + 1], int i);
 
 bool crosswordWordFinder(int GRID_SIZE, int SLOTS, int WORDS,
                          char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], char orgGrid[MAX_GRID_SIZE * MAX_GRID_SIZE],
@@ -109,10 +105,11 @@ int main() {
                         }
                     }
 
+                    printf(" The total weight on each cheerleader is:\n");
                     for (int i = 0; i < PYRAMID_SIZE && !negativeValue; ++i) {
                         for (int j = 0; j <= i; ++j)
                             printf("%.2f ", humanPyramid(i, j, weights));
-                        printf("\b\n");
+                        printf("\n");
                     }
 
                     break;
@@ -126,9 +123,9 @@ int main() {
                     break;
                 case 4: {
                     int N;
-                    printf("Please enter the dimensions of the board:\n");
+                    printf(" Please enter the board dimensions:\n");
                     scanf(" %d", &N);
-                    printf("Please enter the %d*%d puzzle board:\n", N, N);
+                    printf("Please enter a %d*%d puzzle board:\n", N, N);
                     bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE] = {};
                     int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE] = {};
                     char areasNames[MAX_BOARD_SIZE] = {};
@@ -194,7 +191,7 @@ int main() {
                     printf("Please enter the number of words in the dictionary:\n");
                     scanf(" %d", &WORDS);
                     while (WORDS < SLOTS) {
-                        printf("The dictionary must contain at least %d words."
+                        printf("The dictionary must contain at least %d words. "
                                "Please enter a valid dictionary size:\n", SLOTS);
                         scanf(" %d", &WORDS);
                     }
@@ -202,7 +199,7 @@ int main() {
                     for (int i = 0; i < WORDS; ++i) {
                         char word[MAX_WORD_LENGTH + 1];
                         scanf(" %s", word);
-                        int len = length(word) - 1;
+                        int len = (int)strlen(word) - 1;
                         strcpy(words[len][wordsAmounts[len]++], word);
                     }
 
@@ -222,17 +219,13 @@ int main() {
                     printf("Goodbye!\n");
                     return 0;
                 default:
-                    printf("Please choose a option number from the list.\n");
+                    printf(" Please choose a task number from the list.\n");
                     break;
             }
         } else {
             scanf("%*[^\n]");
         }
     }
-}
-
-int length(char *str) {
-    return *str ? 1 + length(str + 1) : 0;
 }
 
 int robotPaths(int i, int j) {
@@ -293,17 +286,17 @@ bool parenthesisValidator(char last) {
     return parenthesisValidator(last);
 }
 
-bool checkBoard(const int areaCounters[MAX_BOARD_SIZE],
-                const int columnCounters[MAX_BOARD_SIZE],
+bool checkBoard(int areaCounters[MAX_BOARD_SIZE],
+                int columnCounters[MAX_BOARD_SIZE],
                 int column, int area) {
     return columnCounters[column] <= 1 && areaCounters[area] <= 1;
 }
 
 bool queensColumn(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
-                  const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   int areaCounters[MAX_BOARD_SIZE],
                   int columnCounters[MAX_BOARD_SIZE],
-                  int position, int j, const int N) {
+                  int position, int j, int N) {
     int row = position / N;
     int column = position % N;
     if (j >= N)
@@ -322,10 +315,10 @@ bool queensColumn(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
 }
 
 bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
-                  const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   int areaCounters[MAX_BOARD_SIZE],
                   int columnCounters[MAX_BOARD_SIZE],
-                  int position, const int N) {
+                  int position, int N) {
     int row = position / N;
     int column = position % N;
     int area = areas[position];
@@ -337,15 +330,16 @@ bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
 }
 
 bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
-               int row, int column, int length, char direction, const char word[MAX_WORD_LENGTH + 1]) {
+               int row, int column, int length, char direction, char word[MAX_WORD_LENGTH + 1], int i) {
     if (length == 0)
         return true;
-    if (grid[GRID_SIZE * row + column] != '\0' && grid[GRID_SIZE * row + column] != *word)
+    if (grid[GRID_SIZE * row + column] != '\0' && grid[GRID_SIZE * row + column] != word[i])
         return false;
-    grid[GRID_SIZE * row + column] = *word;
+    grid[GRID_SIZE * row + column] = word[i];
+
     if (direction == HORIZONTAL)
-        return placeWord(GRID_SIZE, grid, row, column + 1, length - 1, direction, word + 1);
-    return placeWord(GRID_SIZE, grid, row + 1, column, length - 1, direction, word + 1);
+        return placeWord(GRID_SIZE, grid, row, column + 1, length - 1, direction, word, i + 1);
+    return placeWord(GRID_SIZE, grid, row + 1, column, length - 1, direction, word, i + 1);
 }
 
 bool crosswordWordFinder(int GRID_SIZE, int SLOTS, int WORDS,
@@ -357,14 +351,14 @@ bool crosswordWordFinder(int GRID_SIZE, int SLOTS, int WORDS,
         return false;
     if (placeWord(GRID_SIZE, grid, slots[currentSlot].row, slots[currentSlot].column,
                   slots[currentSlot].length, slots[currentSlot].direction,
-                  words[slots[currentSlot].length - 1][word])) {
+                  words[slots[currentSlot].length - 1][word], 0)) {
         currentWords[slots[currentSlot].length - 1]++;
         if (crosswordGenerator(GRID_SIZE, SLOTS, WORDS,
                                grid, slots, currentSlot + 1, words, wordsAmounts, currentWords))
             return true;
         currentWords[slots[currentSlot].length - 1]--;
     }
-    strcpy_s(grid, sizeof(char) * GRID_SIZE * GRID_SIZE, orgGrid);
+    strcpy(grid, orgGrid);
     return crosswordWordFinder(GRID_SIZE, SLOTS, WORDS, grid, orgGrid,
                                slots, currentSlot, words, wordsAmounts, currentWords, word + 1);
 }
@@ -376,7 +370,7 @@ bool crosswordGenerator(int GRID_SIZE, int SLOTS, int WORDS,
     if (currentSlot == SLOTS)
         return true;
     char orgGrid[MAX_GRID_SIZE * MAX_GRID_SIZE];
-    strcpy_s(orgGrid, sizeof(char) * GRID_SIZE * GRID_SIZE, grid);
+    strcpy(orgGrid, grid);
     return crosswordWordFinder(GRID_SIZE, SLOTS, WORDS, grid, orgGrid,
                                slots, currentSlot, words, wordsAmounts, currentWords,
                                currentWords[slots[currentSlot].length - 1]);
