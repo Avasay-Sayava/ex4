@@ -44,6 +44,12 @@ bool checkBoard(const int areaCounters[MAX_BOARD_SIZE],
                 const int columnCounters[MAX_BOARD_SIZE],
                 int column, int area);
 
+bool queensColumn(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  int areaCounters[MAX_BOARD_SIZE],
+                  int columnCounters[MAX_BOARD_SIZE],
+                  int position, int j, int N);
+
 bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   int areaCounters[MAX_BOARD_SIZE],
@@ -52,6 +58,12 @@ bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
 
 bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
                int row, int column, int length, char direction, const char word[MAX_WORD_LENGTH + 1]);
+
+bool crosswordWordFinder(int GRID_SIZE, int SLOTS, int WORDS,
+                         char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], char orgGrid[MAX_GRID_SIZE * MAX_GRID_SIZE],
+                         Slot slots[MAX_SLOTS_NUMBER], int currentSlot,
+                         char words[MAX_WORD_LENGTH][MAX_SLOTS_NUMBER][MAX_WORD_LENGTH + 1],
+                         int wordsAmounts[MAX_WORD_LENGTH], int currentWords[MAX_WORD_LENGTH], int word);
 
 bool crosswordGenerator(int GRID_SIZE, int SLOTS, int WORDS,
                         char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], Slot slots[MAX_SLOTS_NUMBER], int currentSlot,
@@ -195,7 +207,7 @@ int main() {
                     }
 
                     if (crosswordGenerator(GRID_SIZE, SLOTS, WORDS,
-                                       grid, slots, 0, words, wordsAmounts, currentWords)) {
+                                           grid, slots, 0, words, wordsAmounts, currentWords)) {
                         for (int i = 0; i < GRID_SIZE; ++i) {
                             for (int j = 0; j < GRID_SIZE; ++j)
                                 printf("| %c ", grid[GRID_SIZE * i + j]);
@@ -284,11 +296,29 @@ bool parenthesisValidator(char last) {
 bool checkBoard(const int areaCounters[MAX_BOARD_SIZE],
                 const int columnCounters[MAX_BOARD_SIZE],
                 int column, int area) {
-    if (columnCounters[column] > 1)
+    return columnCounters[column] <= 1 && areaCounters[area] <= 1;
+}
+
+bool queensColumn(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  const int areas[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
+                  int areaCounters[MAX_BOARD_SIZE],
+                  int columnCounters[MAX_BOARD_SIZE],
+                  int position, int j, const int N) {
+    int row = position / N;
+    int column = position % N;
+    if (j >= N)
         return false;
-    if (areaCounters[area] > 1)
-        return false;
-    return true;
+    if (column - 1 > j || j > column + 1) {
+        areaCounters[areas[N * row + j]]++;
+        columnCounters[j]++;
+        board[N * row + j] = true;
+        if (queensBattle(board, areas, areaCounters, columnCounters, N * row + j, N))
+            return true;
+        areaCounters[areas[N * row + j]]--;
+        columnCounters[j]--;
+        board[N * row + j] = false;
+    }
+    return queensColumn(board, areas, areaCounters, columnCounters, position, j + 1, N);
 }
 
 bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
@@ -303,19 +333,7 @@ bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
         return false;
     if (++row == N)
         return true;
-    for (int j = 0; j < N; ++j) {
-        if (column - 1 <= j && j <= column + 1)
-            continue;
-        areaCounters[areas[N * row + j]]++;
-        columnCounters[j]++;
-        board[N * row + j] = true;
-        if (queensBattle(board, areas, areaCounters, columnCounters, N * row + j, N))
-            return true;
-        areaCounters[areas[N * row + j]]--;
-        columnCounters[j]--;
-        board[N * row + j] = false;
-    }
-    return false;
+    return queensColumn(board, areas, areaCounters, columnCounters, N * row + column, 0, N);
 }
 
 bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
@@ -330,26 +348,36 @@ bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
     return placeWord(GRID_SIZE, grid, row + 1, column, length - 1, direction, word + 1);
 }
 
+bool crosswordWordFinder(int GRID_SIZE, int SLOTS, int WORDS,
+                         char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], char orgGrid[MAX_GRID_SIZE * MAX_GRID_SIZE],
+                         Slot slots[MAX_SLOTS_NUMBER], int currentSlot,
+                         char words[MAX_WORD_LENGTH][MAX_SLOTS_NUMBER][MAX_WORD_LENGTH + 1],
+                         int wordsAmounts[MAX_WORD_LENGTH], int currentWords[MAX_WORD_LENGTH], int word) {
+    if (word >= wordsAmounts[slots[currentSlot].length - 1])
+        return false;
+    if (placeWord(GRID_SIZE, grid, slots[currentSlot].row, slots[currentSlot].column,
+                  slots[currentSlot].length, slots[currentSlot].direction,
+                  words[slots[currentSlot].length - 1][word])) {
+        currentWords[slots[currentSlot].length - 1]++;
+        if (crosswordGenerator(GRID_SIZE, SLOTS, WORDS,
+                               grid, slots, currentSlot + 1, words, wordsAmounts, currentWords))
+            return true;
+        currentWords[slots[currentSlot].length - 1]--;
+    }
+    strcpy_s(grid, sizeof(char) * GRID_SIZE * GRID_SIZE, orgGrid);
+    return crosswordWordFinder(GRID_SIZE, SLOTS, WORDS, grid, orgGrid,
+                               slots, currentSlot, words, wordsAmounts, currentWords, word + 1);
+}
+
 bool crosswordGenerator(int GRID_SIZE, int SLOTS, int WORDS,
                         char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], Slot slots[MAX_SLOTS_NUMBER], int currentSlot,
                         char words[MAX_WORD_LENGTH][MAX_SLOTS_NUMBER][MAX_WORD_LENGTH + 1],
                         int wordsAmounts[MAX_WORD_LENGTH], int currentWords[MAX_WORD_LENGTH]) {
     if (currentSlot == SLOTS)
         return true;
-    char tmpGrid[MAX_GRID_SIZE * MAX_GRID_SIZE];
-    strcpy_s(tmpGrid, sizeof(char) * GRID_SIZE * GRID_SIZE, grid);
-    for (int i = currentWords[slots[currentSlot].length - 1]; i < wordsAmounts[slots[currentSlot].length - 1]; ++i) {
-        if (placeWord(GRID_SIZE, grid, slots[currentSlot].row, slots[currentSlot].column,
-                      slots[currentSlot].length, slots[currentSlot].direction,
-                      words[slots[currentSlot].length - 1][i])) {
-            currentWords[slots[currentSlot].length - 1]++;
-            if (crosswordGenerator(GRID_SIZE, SLOTS, WORDS,
-                                   grid, slots, currentSlot + 1, words, wordsAmounts, currentWords))
-                return true;
-            currentWords[slots[currentSlot].length - 1]--;
-        }
-        strcpy_s(grid, sizeof(char) * GRID_SIZE * GRID_SIZE, tmpGrid);
-
-    }
-    return false;
+    char orgGrid[MAX_GRID_SIZE * MAX_GRID_SIZE];
+    strcpy_s(orgGrid, sizeof(char) * GRID_SIZE * GRID_SIZE, grid);
+    return crosswordWordFinder(GRID_SIZE, SLOTS, WORDS, grid, orgGrid,
+                               slots, currentSlot, words, wordsAmounts, currentWords,
+                               currentWords[slots[currentSlot].length - 1]);
 }
