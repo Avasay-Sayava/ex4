@@ -52,6 +52,8 @@ bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
                   int columnCounters[MAX_BOARD_SIZE],
                   int position, int N);
 
+void initGrid(char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], int N, int i);
+
 bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
                int row, int column, int length, char direction, char word[MAX_WORD_LENGTH + 1], int i);
 
@@ -126,7 +128,7 @@ int main() {
                     break;
                 case 4: {
                     int N;
-                    printf(" Please enter the board dimensions:\n");
+                    printf("Please enter the board dimensions:\n");
                     scanf(" %d", &N);
                     printf("Please enter a %d*%d puzzle board:\n", N, N);
                     bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE] = {};
@@ -169,15 +171,13 @@ int main() {
                 case 5: {
                     int GRID_SIZE, SLOTS, WORDS;
                     char grid[MAX_GRID_SIZE * MAX_GRID_SIZE] = {};
-                    for (int i = 0; i < MAX_GRID_SIZE * MAX_GRID_SIZE; ++i) {
-                        grid[i] = '#';
-                    }
                     Slot slots[MAX_SLOTS_NUMBER] = {};
                     char words[MAX_WORD_LENGTH][MAX_SLOTS_NUMBER][MAX_WORD_LENGTH + 1] = {};
                     int wordsAmounts[MAX_WORD_LENGTH] = {};
                     int currentWords[MAX_WORD_LENGTH] = {};
                     printf("Please enter the dimensions of the crossword grid:\n");
                     scanf(" %d", &GRID_SIZE);
+                    initGrid(grid, GRID_SIZE, 0);
                     printf("Please enter the number of slots in the crossword:\n");
                     scanf(" %d", &SLOTS);
                     printf("Please enter the details for each slot (Row, Column, Length, Direction):\n");
@@ -304,7 +304,7 @@ bool queensColumn(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
     int column = position % N;
     if (j >= N)
         return false;
-    if (column - 1 > j || j > column + 1) {
+    if (column - 1 > j || j > column + 1 || position == 0) {
         areaCounters[areas[N * row + j]]++;
         columnCounters[j]++;
         board[N * row + j] = true;
@@ -330,6 +330,13 @@ bool queensBattle(bool board[MAX_BOARD_SIZE * MAX_BOARD_SIZE],
     if (++row == N)
         return true;
     return queensColumn(board, areas, areaCounters, columnCounters, N * row + column, 0, N);
+}
+
+void initGrid(char grid[MAX_GRID_SIZE * MAX_GRID_SIZE], int N, int i) {
+    if (i == N * N)
+        return;
+    grid[i] = '#';
+    initGrid(grid, N, i + 1);
 }
 
 bool placeWord(int GRID_SIZE, char grid[MAX_GRID_SIZE * MAX_GRID_SIZE],
